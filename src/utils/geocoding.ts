@@ -3,7 +3,7 @@ import { ExifData } from '../types/metadata';
 /**
  * Reverse geocoding using OpenStreetMap Nominatim API
  */
-export async function reverseGeocode(latitude: number, longitude: number): Promise<ExifData['gps']['location']> {
+export async function reverseGeocode(latitude: number, longitude: number): Promise<NonNullable<ExifData['gps']>['location']> {
   try {
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`;
     
@@ -37,7 +37,7 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
     };
   } catch (error) {
     console.warn('Reverse geocoding failed:', error);
-    return null;
+    return undefined;
   }
 }
 
@@ -140,7 +140,7 @@ export async function getTimezoneFromCoordinates(latitude: number, longitude: nu
 /**
  * Calculate sunrise/sunset times for a location
  */
-export function calculateSunTimes(latitude: number, longitude: number, date: Date = new Date()): {
+export function calculateSunTimes(latitude: number, _longitude: number, date: Date = new Date()): {
   sunrise: Date;
   sunset: Date;
   dayLength: number;

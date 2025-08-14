@@ -99,7 +99,7 @@ export function calculateTechnicalScore(metadata: ImageMetadata): number {
 /**
  * Analyze lighting conditions
  */
-export function analyzeLighting(metadata: ImageMetadata): ImageMetadata['analysis']['lightingAnalysis'] {
+export function analyzeLighting(metadata: ImageMetadata): NonNullable<ImageMetadata['analysis']>['lightingAnalysis'] {
   const { exif } = metadata;
   
   if (!exif.settings) {
@@ -141,7 +141,7 @@ export function analyzeLighting(metadata: ImageMetadata): ImageMetadata['analysi
 /**
  * Analyze camera characteristics
  */
-export function analyzeCamera(metadata: ImageMetadata): ImageMetadata['analysis']['cameraAnalysis'] {
+export function analyzeCamera(metadata: ImageMetadata): NonNullable<ImageMetadata['analysis']>['cameraAnalysis'] {
   const { exif } = metadata;
   
   if (!exif.camera || !exif.settings) {

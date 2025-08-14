@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ImageMetadata, FilterOptions } from './types/metadata';
 import { extractAllMetadata, generatePreview } from './utils/metadataExtractor';
 import { filterMetadata } from './utils/filterUtils';
@@ -8,7 +8,6 @@ import MetadataGrid from './components/MetadataGrid';
 import FilterPanel from './components/FilterPanel';
 import StatsPanel from './components/StatsPanel';
 import ExportPanel from './components/ExportPanel';
-import { Moon, Sun } from 'lucide-react';
 
 function App() {
   const [metadata, setMetadata] = useState<ImageMetadata[]>([]);
@@ -73,6 +72,17 @@ function App() {
           format: file.type,
           dimensions: { width: 0, height: 0 },
           resolution: { x: 0, y: 0 },
+          fileIntegrity: {
+            md5Hash: '',
+            sha256Hash: '',
+            crc32Hash: '',
+            isCorrupted: false,
+            securityChecks: {
+              hasExecutableCode: false,
+              hasSuspiciousHeaders: false,
+              isValidFormat: true,
+            },
+          },
         },
         exif: {},
         iptc: {},

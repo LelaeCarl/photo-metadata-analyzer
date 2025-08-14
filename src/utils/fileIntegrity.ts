@@ -157,8 +157,8 @@ export function validateFileFormat(file: File): boolean {
     'image/dng',
   ];
   
-  return validTypes.includes(file.type.toLowerCase()) || 
-         file.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp|tiff|webp|heic|heif|raw|cr2|nef|arw|dng)$/);
+    return validTypes.includes(file.type.toLowerCase()) ||
+         !!(file.name.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp|tiff|webp|heic|heif|raw|cr2|nef|arw|dng)$/));
 }
 
 /**

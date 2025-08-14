@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ImageMetadata } from '../types/metadata';
 import { 
-  MapPin, Camera, Settings, Calendar, FileText, Star, X, ChevronDown, ChevronRight, 
-  AlertCircle, Loader2, Shield, Hash, Award, Zap, Target, Thermometer, 
-  Clock, Globe, Building, Map, CheckCircle, XCircle, AlertTriangle
+  MapPin, Camera, Settings, FileText, Star, X, 
+  Shield, Hash, Award, Zap, 
+  Building, CheckCircle, XCircle, AlertTriangle
 } from 'lucide-react';
 
 interface MetadataCardProps {
@@ -12,18 +12,7 @@ interface MetadataCardProps {
   viewMode: 'grid' | 'list';
 }
 
-const MetadataCard: React.FC<MetadataCardProps> = ({ metadata, onRemove, viewMode }) => {
-  const [expandedSections, setExpandedSections] = useState<string[]>(['basic']);
-
-  const toggleSection = (section: string) => {
-    setExpandedSections((prev: string[]) =>
-      prev.includes(section)
-        ? prev.filter((s: string) => s !== section)
-        : [...prev, section]
-    );
-  };
-
-  const isExpanded = (section: string) => expandedSections.includes(section);
+const MetadataCard: React.FC<MetadataCardProps> = ({ metadata, onRemove }) => {
 
   // File integrity status
   const getIntegrityStatus = () => {

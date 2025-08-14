@@ -55,7 +55,7 @@ export const extractExifData = async (file: File): Promise<ExifData> => {
       xmp: true,
       icc: true,
       ihdr: true,
-    });
+    } as any);
 
     if (!exif) return {};
 
@@ -171,7 +171,7 @@ export const extractExifData = async (file: File): Promise<ExifData> => {
 
 export const extractIptcData = async (file: File): Promise<IptcData> => {
   try {
-    const iptc = await exifr.iptc(file);
+    const iptc = await exifr.parse(file, { iptc: true });
     
     if (!iptc) return {};
 
@@ -195,7 +195,7 @@ export const extractIptcData = async (file: File): Promise<IptcData> => {
 
 export const extractXmpData = async (file: File): Promise<XmpData> => {
   try {
-    const xmp = await exifr.xmp(file);
+    const xmp = await exifr.parse(file, { xmp: true });
     
     if (!xmp) return {};
 
@@ -225,8 +225,8 @@ export const extractAllMetadata = async (file: File): Promise<Omit<ImageMetadata
     extractXmpData(file),
   ]);
 
-  // Perform professional photo analysis
-  const analysis = performPhotoAnalysis({
+  // Create a temporary metadata object for analysis
+  const tempMetadata: ImageMetadata = {
     id: '',
     file,
     preview: '',
@@ -235,7 +235,10 @@ export const extractAllMetadata = async (file: File): Promise<Omit<ImageMetadata
     iptc,
     xmp,
     processingStatus: 'completed'
-  });
+  };
+
+  // Perform professional photo analysis
+  const analysis = performPhotoAnalysis(tempMetadata);
 
   return {
     file,
