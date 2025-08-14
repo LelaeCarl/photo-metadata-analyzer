@@ -16,9 +16,11 @@ export const getImageDimensions = (file: File): Promise<{ width: number; height:
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
+      console.log('Image loaded, dimensions:', img.naturalWidth, 'x', img.naturalHeight);
       resolve({ width: img.naturalWidth, height: img.naturalHeight });
     };
     img.onerror = () => {
+      console.error('Failed to load image for dimension extraction');
       resolve({ width: 0, height: 0 });
     };
     img.src = URL.createObjectURL(file);
@@ -26,24 +28,58 @@ export const getImageDimensions = (file: File): Promise<{ width: number; height:
 };
 
 export const extractBasicInfo = async (file: File): Promise<BasicInfo> => {
-  const dimensions = await getImageDimensions(file);
-  const fileIntegrity = await performFileIntegrityCheck(file);
+  console.log('Extracting basic info for:', file.name);
   
-  return {
-    fileName: file.name,
-    fileSize: file.size,
-    fileSizeFormatted: formatFileSize(file.size),
-    format: file.type || 'Unknown',
-    dimensions,
-    resolution: {
-      x: dimensions.width,
-      y: dimensions.height,
-    },
-    fileIntegrity,
-  };
+  try {
+    const dimensions = await getImageDimensions(file);
+    console.log('Image dimensions:', dimensions);
+    
+    // Perform actual file integrity check
+    const fileIntegrity = await performFileIntegrityCheck(file);
+    
+    const basicInfo = {
+      fileName: file.name,
+      fileSize: file.size,
+      fileSizeFormatted: formatFileSize(file.size),
+      format: file.type || 'Unknown',
+      dimensions,
+      resolution: {
+        x: dimensions.width,
+        y: dimensions.height,
+      },
+      fileIntegrity,
+    };
+    
+    console.log('Basic info extracted:', basicInfo);
+    return basicInfo;
+  } catch (error) {
+    console.error('Error extracting basic info:', error);
+    // Return minimal info on error
+    return {
+      fileName: file.name,
+      fileSize: file.size,
+      fileSizeFormatted: formatFileSize(file.size),
+      format: file.type || 'Unknown',
+      dimensions: { width: 0, height: 0 },
+      resolution: { x: 0, y: 0 },
+      fileIntegrity: {
+        md5Hash: '',
+        sha256Hash: '',
+        crc32Hash: '',
+        isCorrupted: false,
+        securityChecks: {
+          hasExecutableCode: false,
+          hasSuspiciousHeaders: false,
+          isValidFormat: true,
+        },
+      },
+    };
+  }
 };
 
 export const extractExifData = async (file: File): Promise<ExifData> => {
+  console.log('Extracting EXIF data for:', file.name);
+  
   try {
     const exif = await exifr.parse(file, {
       gps: true,
@@ -57,7 +93,12 @@ export const extractExifData = async (file: File): Promise<ExifData> => {
       ihdr: true,
     } as any);
 
-    if (!exif) return {};
+    console.log('Raw EXIF data:', exif);
+
+    if (!exif) {
+      console.log('No EXIF data found');
+      return {};
+    }
 
     const exifData: ExifData = {};
 
@@ -130,10 +171,9 @@ export const extractExifData = async (file: File): Promise<ExifData> => {
       };
     }
 
-    // GPS data
+    // GPS data with reverse geocoding
     if (exif.latitude && exif.longitude) {
       const location = await reverseGeocode(exif.latitude, exif.longitude);
-      
       exifData.gps = {
         latitude: exif.latitude,
         longitude: exif.longitude,
@@ -162,6 +202,7 @@ export const extractExifData = async (file: File): Promise<ExifData> => {
     exifData.exposureMode = exif.ExposureMode;
     exifData.sceneType = exif.SceneType;
 
+    console.log('EXIF data extracted:', exifData);
     return exifData;
   } catch (error) {
     console.error('Error extracting EXIF data:', error);

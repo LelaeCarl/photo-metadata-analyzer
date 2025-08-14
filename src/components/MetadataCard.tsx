@@ -1,9 +1,23 @@
 import React from 'react';
 import { ImageMetadata } from '../types/metadata';
 import { 
-  MapPin, Camera, Settings, FileText, Star, X, 
-  Shield, Hash, Award, Zap, 
-  Building, CheckCircle, XCircle, AlertTriangle
+  X, 
+  Camera, 
+  Calendar, 
+  MapPin, 
+  Shield, 
+  Settings, 
+  Image as ImageIcon,
+  Zap,
+  Star,
+  Target,
+  Clock,
+  Eye,
+  TrendingUp,
+  CheckCircle,
+  AlertTriangle,
+  Smartphone,
+  Tablet
 } from 'lucide-react';
 
 interface MetadataCardProps {
@@ -12,241 +26,263 @@ interface MetadataCardProps {
   viewMode: 'grid' | 'list';
 }
 
-const MetadataCard: React.FC<MetadataCardProps> = ({ metadata, onRemove }) => {
-
-  // File integrity status
+const MetadataCard: React.FC<MetadataCardProps> = ({ metadata, onRemove, viewMode }) => {
   const getIntegrityStatus = () => {
-    if (!metadata.basicInfo.fileIntegrity) return null;
-    
-    const { isCorrupted, securityChecks } = metadata.basicInfo.fileIntegrity;
-    
-    if (isCorrupted) {
-      return { icon: <XCircle className="w-4 h-4 text-red-500" />, text: 'Corrupted', color: 'text-red-500' };
+    const integrity = metadata.basicInfo.fileIntegrity;
+    if (integrity.isCorrupted) return { status: 'corrupted', icon: AlertTriangle, color: 'text-red-500' };
+    if (integrity.securityChecks.hasExecutableCode || integrity.securityChecks.hasSuspiciousHeaders) {
+      return { status: 'warning', icon: AlertTriangle, color: 'text-amber-500' };
     }
-    
-    if (securityChecks.hasExecutableCode || securityChecks.hasSuspiciousHeaders) {
-      return { icon: <AlertTriangle className="w-4 h-4 text-yellow-500" />, text: 'Security Warning', color: 'text-yellow-500' };
-    }
-    
-    return { icon: <CheckCircle className="w-4 h-4 text-green-500" />, text: 'Valid', color: 'text-green-500' };
+    return { status: 'valid', icon: CheckCircle, color: 'text-emerald-500' };
   };
 
-  // Quality score display
   const getQualityScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 60) return 'text-yellow-500';
-    return 'text-red-500';
+    if (score >= 8) return 'text-emerald-600';
+    if (score >= 6) return 'text-amber-600';
+    return 'text-red-600';
   };
 
-  const renderStatus = () => {
-    switch (metadata.processingStatus) {
-      case 'pending':
-        return <div className="text-yellow-600">Pending</div>;
-      case 'processing':
-        return <div className="text-blue-600">Processing</div>;
-      case 'error':
-        return <div className="text-red-600">Error</div>;
-      default:
-        return null;
+  const getDeviceIcon = (make?: string) => {
+    if (!make) return Camera;
+    const lowerMake = make.toLowerCase();
+    if (lowerMake.includes('iphone') || lowerMake.includes('samsung') || lowerMake.includes('google')) {
+      return Smartphone;
     }
+    if (lowerMake.includes('ipad') || lowerMake.includes('tablet')) {
+      return Tablet;
+    }
+    return Camera;
   };
+
+  const integrityStatus = getIntegrityStatus();
+  const DeviceIcon = getDeviceIcon(metadata.exif.camera?.make);
 
   return (
-    <div className="card p-4 space-y-4">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-medium text-gray-900 dark:text-white truncate">
-              {metadata.basicInfo.fileName}
-            </span>
-            <button onClick={() => onRemove(metadata.id)}>
-              <X className="w-4 h-4 text-gray-400 hover:text-red-500" />
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <div>Size: {metadata.basicInfo.fileSizeFormatted}</div>
-            <div>Format: {metadata.basicInfo.format}</div>
-            <div>Dimensions: {metadata.basicInfo.dimensions.width} × {metadata.basicInfo.dimensions.height}</div>
-            {metadata.basicInfo.fileIntegrity && (
-              <div className="flex items-center space-x-1">
-                <Shield className="w-3 h-3" />
-                <span>Integrity: {getIntegrityStatus()?.text}</span>
+    <div className="group bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-700 overflow-hidden">
+      {/* Image Header */}
+      <div className="relative h-48 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-700 dark:to-gray-800">
+        {metadata.preview && (
+          <img 
+            src={metadata.preview} 
+            alt={metadata.basicInfo.fileName}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        )}
+        
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent">
+          <div className="absolute bottom-4 left-4 right-4">
+            <div className="flex items-center justify-between text-white">
+              <div className="flex items-center space-x-2 flex-1 min-w-0">
+                <DeviceIcon className="w-4 h-4 flex-shrink-0" />
+                <span className="font-medium text-sm truncate">
+                  {metadata.basicInfo.fileName}
+                </span>
               </div>
-            )}
+              <button
+                onClick={() => onRemove(metadata.id)}
+                className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200 backdrop-blur-sm flex-shrink-0 ml-2"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
           </div>
         </div>
-        {renderStatus()}
+
+        {/* Quality Score Badge */}
+        {metadata.analysis?.qualityScore && (
+          <div className="absolute top-4 right-4">
+            <div className="flex items-center space-x-1 px-2 py-1 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+              <Star className={`w-3 h-3 ${getQualityScoreColor(metadata.analysis.qualityScore)}`} />
+              <span className={`text-xs font-semibold ${getQualityScoreColor(metadata.analysis.qualityScore)}`}>
+                {metadata.analysis.qualityScore.toFixed(1)}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {metadata.preview && (
-        <img
-          src={metadata.preview}
-          alt={metadata.basicInfo.fileName}
-          className="w-full h-48 object-cover rounded-lg"
-        />
-      )}
-
-      {metadata.processingStatus === 'completed' && (
-        <div className="space-y-4">
-          {/* Professional Analysis Scores */}
-          {metadata.analysis && (
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-3 rounded-lg">
-              <div className="flex items-center space-x-2 mb-2">
-                <Award className="w-4 h-4 text-blue-600" />
-                <span className="font-medium text-sm">Professional Analysis</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className="text-center">
-                  <div className={`font-bold ${getQualityScoreColor(metadata.analysis.qualityScore || 0)}`}>
-                    {metadata.analysis.qualityScore || 0}
-                  </div>
-                  <div className="text-gray-500">Quality</div>
-                </div>
-                <div className="text-center">
-                  <div className={`font-bold ${getQualityScoreColor(metadata.analysis.technicalScore || 0)}`}>
-                    {metadata.analysis.technicalScore || 0}
-                  </div>
-                  <div className="text-gray-500">Technical</div>
-                </div>
-                <div className="text-center">
-                  <div className={`font-bold ${getQualityScoreColor(metadata.analysis.compositionScore || 0)}`}>
-                    {metadata.analysis.compositionScore || 0}
-                  </div>
-                  <div className="text-gray-500">Overall</div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Camera Information */}
-          {metadata.exif.camera && (
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Camera className="w-4 h-4 text-gray-400" />
-                <span className="text-sm font-medium">
-                  {metadata.exif.camera.make} {metadata.exif.camera.model}
-                </span>
-                {metadata.analysis?.cameraAnalysis?.isProfessional && (
-                  <Award className="w-4 h-4 text-yellow-500" />
-                )}
-              </div>
-              {metadata.exif.camera.serialNumber && (
-                <div className="text-xs text-gray-500">S/N: {metadata.exif.camera.serialNumber}</div>
-              )}
-            </div>
-          )}
+      {/* Content */}
+      <div className="p-5 space-y-5">
+        {/* Basic Info */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white break-words">
+            {metadata.basicInfo.fileName}
+          </h3>
           
-          {/* Advanced Camera Settings */}
-          {metadata.exif.settings && (
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Settings className="w-4 h-4 text-gray-400" />
-                <span className="text-sm font-medium">Camera Settings</span>
-              </div>
-              <div className="grid grid-cols-2 gap-1 text-xs">
-                <div>f/{metadata.exif.settings.aperture}</div>
-                <div>ISO {metadata.exif.settings.iso}</div>
-                <div>{metadata.exif.settings.focalLength}mm</div>
-                <div>{metadata.exif.settings.shutterSpeed}</div>
-                {metadata.exif.settings.exposureCompensation && (
-                  <div>EV {metadata.exif.settings.exposureCompensation}</div>
-                )}
-                {metadata.exif.settings.whiteBalance && (
-                  <div>{metadata.exif.settings.whiteBalance}</div>
-                )}
-              </div>
-              
-              {/* Lighting Analysis */}
-              {metadata.analysis?.lightingAnalysis && (
-                <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs">
-                  <div className="flex items-center space-x-1 mb-1">
-                    <Zap className="w-3 h-3 text-yellow-500" />
-                    <span>Lighting: {metadata.analysis.lightingAnalysis.exposureLevel}</span>
-                  </div>
-                  {metadata.analysis.lightingAnalysis.isLowLight && (
-                    <div className="text-orange-600">Low Light Conditions</div>
-                  )}
-                  {metadata.analysis.lightingAnalysis.isHighDynamicRange && (
-                    <div className="text-blue-600">High Dynamic Range</div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-          
-          {/* Enhanced GPS Information */}
-          {metadata.exif.gps && (
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <MapPin className="w-4 h-4 text-gray-400" />
-                <span className="text-sm font-medium">Location</span>
-              </div>
-              <div className="text-xs space-y-1">
-                <div>{metadata.exif.gps.latitude.toFixed(6)}, {metadata.exif.gps.longitude.toFixed(6)}</div>
-                {metadata.exif.gps.location?.city && (
-                  <div className="flex items-center space-x-1">
-                    <Building className="w-3 h-3" />
-                    <span>{metadata.exif.gps.location.city}, {metadata.exif.gps.location.country}</span>
-                  </div>
-                )}
-                {metadata.exif.gps.altitude && (
-                  <div>Altitude: {metadata.exif.gps.altitude}m</div>
-                )}
-                {metadata.exif.gps.speed && (
-                  <div>Speed: {metadata.exif.gps.speed} {metadata.exif.gps.speedRef}</div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {/* File Integrity Details */}
-          {metadata.basicInfo.fileIntegrity && (
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Shield className="w-4 h-4 text-gray-400" />
-                <span className="text-sm font-medium">File Integrity</span>
-                {getIntegrityStatus()?.icon}
-              </div>
-              <div className="text-xs space-y-1">
-                <div className="flex items-center space-x-1">
-                  <Hash className="w-3 h-3" />
-                  <span>MD5: {metadata.basicInfo.fileIntegrity.md5Hash.substring(0, 8)}...</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Hash className="w-3 h-3" />
-                  <span>SHA256: {metadata.basicInfo.fileIntegrity.sha256Hash.substring(0, 8)}...</span>
-                </div>
-                {metadata.basicInfo.fileIntegrity.securityChecks.hasExecutableCode && (
-                  <div className="text-red-600 flex items-center space-x-1">
-                    <AlertTriangle className="w-3 h-3" />
-                    <span>Contains executable code</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {/* IPTC Information */}
-          {metadata.iptc.caption && (
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              <div className="flex items-center space-x-2 mb-1">
-                <FileText className="w-4 h-4" />
-                <span className="font-medium">Caption</span>
-              </div>
-              {metadata.iptc.caption}
-            </div>
-          )}
-          
-          {/* XMP Rating */}
-          {metadata.xmp.rating && (
+          <div className="grid grid-cols-2 gap-4 text-xs text-gray-600 dark:text-gray-400">
             <div className="flex items-center space-x-2">
-              <Star className="w-4 h-4 text-yellow-500" />
-              <span className="text-sm">Rating: {metadata.xmp.rating}/5</span>
+              <ImageIcon className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{metadata.basicInfo.fileSizeFormatted}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Target className="w-3 h-3 flex-shrink-0" />
+              <span>{metadata.basicInfo.dimensions.width} × {metadata.basicInfo.dimensions.height}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Camera Info */}
+        {metadata.exif.camera && (
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Camera className="w-4 h-4 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white">Camera</h4>
+            </div>
+            <div className="space-y-2">
+              {metadata.exif.camera.make && metadata.exif.camera.model && (
+                <div className="flex items-start justify-between text-xs">
+                  <span className="text-gray-500 dark:text-gray-400 flex-shrink-0 mr-3">Model</span>
+                  <span className="font-medium text-gray-900 dark:text-white text-right break-words">
+                    {metadata.exif.camera.make} {metadata.exif.camera.model}
+                  </span>
+                </div>
+              )}
+              {metadata.exif.settings?.lens && (
+                <div className="flex items-start justify-between text-xs">
+                  <span className="text-gray-500 dark:text-gray-400 flex-shrink-0 mr-3">Lens</span>
+                  <span className="font-medium text-gray-900 dark:text-white text-right break-words">
+                    {metadata.exif.settings.lens}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Camera Settings */}
+        {metadata.exif.settings && (
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Settings className="w-4 h-4 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white">Settings</h4>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {metadata.exif.settings.aperture && (
+                <div className="flex items-center space-x-2">
+                  <Eye className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs text-gray-500">f/{metadata.exif.settings.aperture}</div>
+                  </div>
+                </div>
+              )}
+              {metadata.exif.settings.shutterSpeed && (
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs text-gray-500">
+                      {typeof metadata.exif.settings.shutterSpeed === 'string' 
+                        ? parseFloat(metadata.exif.settings.shutterSpeed).toFixed(3) + 's'
+                        : metadata.exif.settings.shutterSpeed + 's'
+                      }
+                    </div>
+                  </div>
+                </div>
+              )}
+              {metadata.exif.settings.iso && (
+                <div className="flex items-center space-x-2">
+                  <Zap className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs text-gray-500">ISO {metadata.exif.settings.iso}</div>
+                  </div>
+                </div>
+              )}
+              {metadata.exif.settings.focalLength && (
+                <div className="flex items-center space-x-2">
+                  <Target className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs text-gray-500">
+                      {typeof metadata.exif.settings.focalLength === 'string' 
+                        ? parseFloat(metadata.exif.settings.focalLength).toFixed(1) + 'mm'
+                        : metadata.exif.settings.focalLength + 'mm'
+                      }
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Date & Location */}
+        <div className="space-y-2">
+          {metadata.exif.datetime?.original && (
+            <div className="flex items-center space-x-2">
+              <Calendar className="w-3 h-3 text-gray-400 flex-shrink-0" />
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                {new Date(metadata.exif.datetime.original).toLocaleDateString()}
+              </span>
+            </div>
+          )}
+          {metadata.exif.gps?.location?.city && (
+            <div className="flex items-center space-x-2">
+              <MapPin className="w-3 h-3 text-gray-400 flex-shrink-0" />
+              <span className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                {metadata.exif.gps.location.city}, {metadata.exif.gps.location.country}
+              </span>
             </div>
           )}
         </div>
-      )}
+
+        {/* File Integrity */}
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Shield className="w-4 h-4 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+            <h4 className="text-sm font-medium text-gray-900 dark:text-white">Integrity</h4>
+            <integrityStatus.icon className={`w-3 h-3 ${integrityStatus.color} flex-shrink-0`} />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-500">MD5</span>
+              <span className="font-mono text-gray-600 dark:text-gray-300">
+                {metadata.basicInfo.fileIntegrity.md5Hash.substring(0, 8)}...
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-500">SHA256</span>
+              <span className="font-mono text-gray-600 dark:text-gray-300">
+                {metadata.basicInfo.fileIntegrity.sha256Hash.substring(0, 8)}...
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Analysis Scores */}
+        {metadata.analysis && (
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="w-4 h-4 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white">Analysis</h4>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {metadata.analysis.qualityScore && (
+                <div className="text-center p-2 rounded-lg bg-slate-50 dark:bg-gray-700">
+                  <div className={`text-sm font-bold ${getQualityScoreColor(metadata.analysis.qualityScore)}`}>
+                    {metadata.analysis.qualityScore.toFixed(1)}
+                  </div>
+                  <div className="text-xs text-gray-500">Quality</div>
+                </div>
+              )}
+              {metadata.analysis.technicalScore && (
+                <div className="text-center p-2 rounded-lg bg-slate-50 dark:bg-gray-700">
+                  <div className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                    {metadata.analysis.technicalScore.toFixed(1)}
+                  </div>
+                  <div className="text-xs text-gray-500">Technical</div>
+                </div>
+              )}
+              {metadata.analysis.compositionScore && (
+                <div className="text-center p-2 rounded-lg bg-slate-50 dark:bg-gray-700">
+                  <div className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                    {metadata.analysis.compositionScore.toFixed(1)}
+                  </div>
+                  <div className="text-xs text-gray-500">Composition</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

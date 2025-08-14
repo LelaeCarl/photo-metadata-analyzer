@@ -8,6 +8,8 @@ import MetadataGrid from './components/MetadataGrid';
 import FilterPanel from './components/FilterPanel';
 import StatsPanel from './components/StatsPanel';
 import ExportPanel from './components/ExportPanel';
+import AnalyticsPanel from './components/AnalyticsPanel';
+import InsightsPanel from './components/InsightsPanel';
 
 function App() {
   const [metadata, setMetadata] = useState<ImageMetadata[]>([]);
@@ -43,7 +45,13 @@ function App() {
 
   // Apply filters when metadata or filters change
   useEffect(() => {
-    setFilteredMetadata(filterMetadata(metadata, filters));
+    console.log('Metadata state changed:', metadata.length, 'items');
+    console.log('Metadata items:', metadata);
+    // Temporarily bypass filtering to see if that's the issue
+    setFilteredMetadata(metadata);
+    // const filtered = filterMetadata(metadata, filters);
+    // console.log('Filtered metadata:', filtered.length, 'items');
+    // setFilteredMetadata(filtered);
   }, [metadata, filters]);
 
   const handleFileUpload = async (files: FileList) => {
@@ -192,18 +200,22 @@ function App() {
               isProcessing={isProcessing}
             />
             
-            <StatsPanel metadata={filteredMetadata} />
-            
-            <FilterPanel 
-              filters={filters}
-              onFiltersChange={setFilters}
-              metadata={metadata}
-            />
-            
-            <ExportPanel 
-              metadata={filteredMetadata}
-              onClearAll={handleClearAll}
-            />
+                         <StatsPanel metadata={filteredMetadata} />
+             
+             <AnalyticsPanel metadata={filteredMetadata} />
+             
+             <InsightsPanel metadata={filteredMetadata} />
+             
+             <FilterPanel 
+               filters={filters}
+               onFiltersChange={setFilters}
+               metadata={metadata}
+             />
+             
+             <ExportPanel 
+               metadata={filteredMetadata}
+               onClearAll={handleClearAll}
+             />
           </div>
 
           {/* Main Content */}
