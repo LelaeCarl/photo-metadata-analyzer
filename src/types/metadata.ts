@@ -14,12 +14,27 @@ export interface BasicInfo {
   checksum?: string;
   encoding?: string;
   compression?: string;
+  // File Integrity
+  fileIntegrity: {
+    md5Hash: string;
+    sha256Hash: string;
+    crc32Hash: string;
+    isCorrupted: boolean;
+    securityChecks: {
+      hasExecutableCode: boolean;
+      hasSuspiciousHeaders: boolean;
+      isValidFormat: boolean;
+    };
+  };
 }
 
 export interface ExifData {
   camera?: {
     make: string;
     model: string;
+    serialNumber?: string;
+    firmwareVersion?: string;
+    lensMount?: string;
   };
   settings?: {
     aperture: number;
@@ -27,17 +42,111 @@ export interface ExifData {
     iso: number;
     focalLength: number;
     lens: string;
+    // Advanced Camera Settings
+    exposureCompensation?: number;
+    exposureBias?: number;
+    maxAperture?: number;
+    minAperture?: number;
+    flashMode?: string;
+    flashFired?: boolean;
+    flashReturn?: string;
+    flashRedEye?: boolean;
+    meteringMode?: string;
+    whiteBalance?: string;
+    exposureMode?: string;
+    sceneType?: string;
+    digitalZoom?: number;
+    contrast?: string;
+    saturation?: string;
+    sharpness?: string;
+    gainControl?: string;
+    subjectDistance?: number;
+    subjectDistanceRange?: string;
+    colorSpace?: string;
+    customRendered?: string;
+    exposureProgram?: string;
+    sensingMethod?: string;
+    fileSource?: string;
+    sceneCaptureType?: string;
+    gainControl?: string;
+    contrast?: string;
+    saturation?: string;
+    sharpness?: string;
+    subjectDistanceRange?: string;
+    imageUniqueID?: string;
+    ownerName?: string;
+    bodySerialNumber?: string;
+    lensSpecification?: string;
+    lensMake?: string;
+    lensModel?: string;
+    lensSerialNumber?: string;
+    lensFirmwareVersion?: string;
+    compositeImage?: string;
+    sourceImageNumberOfCompositeImage?: number;
+    sourceExposureTimesOfCompositeImage?: string;
+    focalLengthIn35mmFilm?: number;
+    sceneType?: string;
+    customRendered?: string;
+    exposureMode?: string;
+    whiteBalance?: string;
+    digitalZoomRatio?: number;
+    focalLengthIn35mmFilm?: number;
+    sceneCaptureType?: string;
+    gainControl?: string;
+    contrast?: string;
+    saturation?: string;
+    sharpness?: string;
+    subjectDistanceRange?: string;
+    imageUniqueID?: string;
+    ownerName?: string;
+    bodySerialNumber?: string;
+    lensSpecification?: string;
+    lensMake?: string;
+    lensModel?: string;
+    lensSerialNumber?: string;
+    lensFirmwareVersion?: string;
+    compositeImage?: string;
+    sourceImageNumberOfCompositeImage?: number;
+    sourceExposureTimesOfCompositeImage?: string;
   };
   datetime?: {
     original: string;
     digitized: string;
     modified: string;
+    subsecTime?: string;
+    subsecTimeOriginal?: string;
+    subsecTimeDigitized?: string;
+    timeZoneOffset?: number;
   };
   gps?: {
     latitude: number;
     longitude: number;
     altitude?: number;
     heading?: number;
+    // Enhanced GPS Data
+    speed?: number;
+    speedRef?: string;
+    track?: number;
+    trackRef?: string;
+    imgDirection?: number;
+    imgDirectionRef?: string;
+    gpsTimeStamp?: string;
+    gpsDateStamp?: string;
+    gpsProcessingMethod?: string;
+    gpsAreaInformation?: string;
+    gpsDifferential?: number;
+    gpsHPositioningError?: number;
+    // Reverse Geocoding
+    location?: {
+      country?: string;
+      state?: string;
+      city?: string;
+      address?: string;
+      postalCode?: string;
+      timezone?: string;
+      accuracy?: number;
+      placeId?: string;
+    };
   };
   flash?: boolean;
   meteringMode?: string;
@@ -57,6 +166,94 @@ export interface IptcData {
   description?: string;
   category?: string;
   subcategory?: string;
+  // Enhanced IPTC
+  byline?: string;
+  bylineTitle?: string;
+  credit?: string;
+  source?: string;
+  objectName?: string;
+  dateCreated?: string;
+  city?: string;
+  subLocation?: string;
+  provinceState?: string;
+  countryPrimaryLocationName?: string;
+  originalTransmissionReference?: string;
+  headline?: string;
+  specialInstructions?: string;
+  category?: string;
+  supplementalCategories?: string[];
+  urgency?: string;
+  releaseDate?: string;
+  releaseTime?: string;
+  expirationDate?: string;
+  expirationTime?: string;
+  referenceService?: string;
+  referenceDate?: string;
+  referenceNumber?: string;
+  timeCreated?: string;
+  subTime?: string;
+  originalTransmissionReference?: string;
+  objectName?: string;
+  editStatus?: string;
+  editorialUpdate?: string;
+  urgency?: string;
+  subjectReference?: string;
+  category?: string;
+  supplementalCategories?: string[];
+  fixtureIdentifier?: string;
+  keywords?: string[];
+  contentLocationCode?: string;
+  contentLocationName?: string;
+  releaseDate?: string;
+  releaseTime?: string;
+  expirationDate?: string;
+  expirationTime?: string;
+  specialInstructions?: string;
+  actionAdvised?: string;
+  referenceService?: string;
+  referenceDate?: string;
+  referenceNumber?: string;
+  dateCreated?: string;
+  timeCreated?: string;
+  digitalCreationDate?: string;
+  digitalCreationTime?: string;
+  originatingProgram?: string;
+  programVersion?: string;
+  objectCycle?: string;
+  byline?: string;
+  bylineTitle?: string;
+  city?: string;
+  subLocation?: string;
+  provinceState?: string;
+  countryPrimaryLocationCode?: string;
+  countryPrimaryLocationName?: string;
+  originalTransmissionReference?: string;
+  headline?: string;
+  credit?: string;
+  source?: string;
+  copyrightNotice?: string;
+  contact?: string;
+  captionAbstract?: string;
+  writerEditor?: string;
+  rasterizedCaption?: string;
+  imageType?: string;
+  imageOrientation?: string;
+  languageIdentifier?: string;
+  audioType?: string;
+  audioSamplingRate?: string;
+  audioSamplingResolution?: string;
+  audioDuration?: string;
+  audioOutcue?: string;
+  jobID?: string;
+  masterDocumentID?: string;
+  shortDocumentID?: string;
+  uniqueDocumentID?: string;
+  ownerID?: string;
+  objectPreviewFileFormat?: string;
+  objectPreviewFileVersion?: string;
+  objectPreviewData?: string;
+  prefixedObjectArray?: string;
+  recordVersion?: string;
 }
 
 export interface XmpData {
@@ -70,6 +267,88 @@ export interface XmpData {
   subject?: string[];
   lightroomEdits?: Record<string, any>;
   adobeData?: Record<string, any>;
+  // Enhanced XMP
+  createDate?: string;
+  modifyDate?: string;
+  metadataDate?: string;
+  creatorTool?: string;
+  label?: string;
+  rating?: number;
+  colorLabels?: string[];
+  keywords?: string[];
+  description?: string;
+  title?: string;
+  subject?: string[];
+  creator?: string;
+  rights?: string;
+  usageTerms?: string;
+  webStatement?: string;
+  instructions?: string;
+  provenance?: string;
+  copyright?: string;
+  copyrightStatus?: string;
+  copyrightOwner?: string[];
+  copyrightInfoURL?: string;
+  copyrightYear?: number;
+  copyrightNotice?: string;
+  usageTerms?: string;
+  webStatement?: string;
+  instructions?: string;
+  provenance?: string;
+  rightsUsageTerms?: string;
+  rightsWebStatement?: string;
+  rightsInstructions?: string;
+  rightsProvenance?: string;
+  rightsCopyright?: string;
+  rightsCopyrightStatus?: string;
+  rightsCopyrightOwner?: string[];
+  rightsCopyrightInfoURL?: string;
+  rightsCopyrightYear?: number;
+  rightsCopyrightNotice?: string;
+  // Professional Photo Data
+  professionalData?: {
+    colorProfile?: string;
+    colorSpace?: string;
+    colorMode?: string;
+    bitDepth?: number;
+    compression?: string;
+    quality?: number;
+    format?: string;
+    dimensions?: {
+      width: number;
+      height: number;
+      unit?: string;
+    };
+    resolution?: {
+      x: number;
+      y: number;
+      unit?: string;
+    };
+    aspectRatio?: number;
+    megapixels?: number;
+    fileFormat?: string;
+    mimeType?: string;
+    hasAlpha?: boolean;
+    isTransparent?: boolean;
+    hasColorProfile?: boolean;
+    isSrgb?: boolean;
+    hasIccProfile?: boolean;
+    iccProfileName?: string;
+    iccProfileDescription?: string;
+    iccProfileCopyright?: string;
+    iccProfileManufacturer?: string;
+    iccProfileModel?: string;
+    iccProfileVersion?: string;
+    iccProfileClass?: string;
+    iccProfileColorSpace?: string;
+    iccProfileConnectionSpace?: string;
+    iccProfileRenderingIntent?: string;
+    iccProfileIlluminant?: string;
+    iccProfileCreator?: string;
+    iccProfileAttributes?: string;
+    iccProfileTagCount?: number;
+    iccProfileTags?: Record<string, any>;
+  };
 }
 
 export interface ImageMetadata {
@@ -82,6 +361,33 @@ export interface ImageMetadata {
   xmp: XmpData;
   processingStatus: 'pending' | 'processing' | 'completed' | 'error';
   error?: string;
+  // Professional Analysis
+  analysis?: {
+    qualityScore?: number;
+    technicalScore?: number;
+    compositionScore?: number;
+    lightingAnalysis?: {
+      isLowLight: boolean;
+      isHighDynamicRange: boolean;
+      exposureLevel: 'under' | 'normal' | 'over';
+      contrastLevel: 'low' | 'medium' | 'high';
+    };
+    cameraAnalysis?: {
+      isProfessional: boolean;
+      sensorSize?: string;
+      cropFactor?: number;
+      effectiveFocalLength?: number;
+      depthOfField?: 'shallow' | 'medium' | 'deep';
+      motionBlur?: boolean;
+      cameraShake?: boolean;
+    };
+    locationAnalysis?: {
+      timeOfDay?: 'dawn' | 'day' | 'dusk' | 'night';
+      season?: 'spring' | 'summer' | 'autumn' | 'winter';
+      weatherConditions?: string[];
+      lightingConditions?: string[];
+    };
+  };
 }
 
 export interface FilterOptions {
@@ -93,6 +399,26 @@ export interface FilterOptions {
   cameraModel: string[];
   hasGps: boolean | null;
   hasExif: boolean | null;
+  // Enhanced Filters
+  qualityScore?: {
+    min: number;
+    max: number;
+  };
+  fileSize?: {
+    min: number;
+    max: number;
+  };
+  resolution?: {
+    min: number;
+    max: number;
+  };
+  lensType?: string[];
+  exposureMode?: string[];
+  meteringMode?: string[];
+  whiteBalance?: string[];
+  flashUsed?: boolean | null;
+  hasLocation?: boolean | null;
+  fileIntegrity?: 'valid' | 'corrupted' | 'all';
 }
 
 export interface ExportFormat {

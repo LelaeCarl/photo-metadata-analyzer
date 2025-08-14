@@ -1,5 +1,8 @@
 import exifr from 'exifr';
 import { BasicInfo, ExifData, IptcData, XmpData, ImageMetadata } from '../types/metadata';
+import { performFileIntegrityCheck } from './fileIntegrity';
+import { reverseGeocode } from './geocoding';
+import { performPhotoAnalysis } from './photoAnalysis';
 
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes';
@@ -24,6 +27,7 @@ export const getImageDimensions = (file: File): Promise<{ width: number; height:
 
 export const extractBasicInfo = async (file: File): Promise<BasicInfo> => {
   const dimensions = await getImageDimensions(file);
+  const fileIntegrity = await performFileIntegrityCheck(file);
   
   return {
     fileName: file.name,
@@ -35,6 +39,7 @@ export const extractBasicInfo = async (file: File): Promise<BasicInfo> => {
       x: dimensions.width,
       y: dimensions.height,
     },
+    fileIntegrity,
   };
 };
 
@@ -61,6 +66,9 @@ export const extractExifData = async (file: File): Promise<ExifData> => {
       exifData.camera = {
         make: exif.Make || '',
         model: exif.Model || '',
+        serialNumber: exif.BodySerialNumber || exif.SerialNumber,
+        firmwareVersion: exif.FirmwareVersion || exif.Software,
+        lensMount: exif.LensMount,
       };
     }
 
@@ -72,6 +80,44 @@ export const extractExifData = async (file: File): Promise<ExifData> => {
         iso: exif.ISO || 0,
         focalLength: exif.FocalLength || 0,
         lens: exif.LensModel || exif.Lens || '',
+        // Advanced Camera Settings
+        exposureCompensation: exif.ExposureBiasValue,
+        exposureBias: exif.ExposureBiasValue,
+        maxAperture: exif.MaxApertureValue,
+        minAperture: exif.MinApertureValue,
+        flashMode: exif.FlashMode,
+        flashFired: exif.FlashFired,
+        flashReturn: exif.FlashReturn,
+        flashRedEye: exif.FlashRedEye,
+        meteringMode: exif.MeteringMode,
+        whiteBalance: exif.WhiteBalance,
+        exposureMode: exif.ExposureMode,
+        sceneType: exif.SceneType,
+        digitalZoom: exif.DigitalZoomRatio,
+        contrast: exif.Contrast,
+        saturation: exif.Saturation,
+        sharpness: exif.Sharpness,
+        gainControl: exif.GainControl,
+        subjectDistance: exif.SubjectDistance,
+        subjectDistanceRange: exif.SubjectDistanceRange,
+        colorSpace: exif.ColorSpace,
+        customRendered: exif.CustomRendered,
+        exposureProgram: exif.ExposureProgram,
+        sensingMethod: exif.SensingMethod,
+        fileSource: exif.FileSource,
+        sceneCaptureType: exif.SceneCaptureType,
+        imageUniqueID: exif.ImageUniqueID,
+        ownerName: exif.OwnerName,
+        bodySerialNumber: exif.BodySerialNumber,
+        lensSpecification: exif.LensSpecification,
+        lensMake: exif.LensMake,
+        lensModel: exif.LensModel,
+        lensSerialNumber: exif.LensSerialNumber,
+        lensFirmwareVersion: exif.LensFirmwareVersion,
+        compositeImage: exif.CompositeImage,
+        sourceImageNumberOfCompositeImage: exif.SourceImageNumberOfCompositeImage,
+        sourceExposureTimesOfCompositeImage: exif.SourceExposureTimesOfCompositeImage,
+        focalLengthIn35mmFilm: exif.FocalLengthIn35mmFilm,
       };
     }
 
@@ -86,11 +132,26 @@ export const extractExifData = async (file: File): Promise<ExifData> => {
 
     // GPS data
     if (exif.latitude && exif.longitude) {
+      const location = await reverseGeocode(exif.latitude, exif.longitude);
+      
       exifData.gps = {
         latitude: exif.latitude,
         longitude: exif.longitude,
         altitude: exif.GPSAltitude,
         heading: exif.GPSImgDirection,
+        speed: exif.GPSSpeed,
+        speedRef: exif.GPSSpeedRef,
+        track: exif.GPSTrack,
+        trackRef: exif.GPSTrackRef,
+        imgDirection: exif.GPSImgDirection,
+        imgDirectionRef: exif.GPSImgDirectionRef,
+        gpsTimeStamp: exif.GPSTimeStamp,
+        gpsDateStamp: exif.GPSDateStamp,
+        gpsProcessingMethod: exif.GPSProcessingMethod,
+        gpsAreaInformation: exif.GPSAreaInformation,
+        gpsDifferential: exif.GPSDifferential,
+        gpsHPositioningError: exif.GPSHPositioningError,
+        location,
       };
     }
 
@@ -164,12 +225,25 @@ export const extractAllMetadata = async (file: File): Promise<Omit<ImageMetadata
     extractXmpData(file),
   ]);
 
+  // Perform professional photo analysis
+  const analysis = performPhotoAnalysis({
+    id: '',
+    file,
+    preview: '',
+    basicInfo,
+    exif,
+    iptc,
+    xmp,
+    processingStatus: 'completed'
+  });
+
   return {
     file,
     basicInfo,
     exif,
     iptc,
     xmp,
+    analysis,
   };
 };
 
