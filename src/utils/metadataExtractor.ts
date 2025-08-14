@@ -218,36 +218,47 @@ export const extractXmpData = async (file: File): Promise<XmpData> => {
 };
 
 export const extractAllMetadata = async (file: File): Promise<Omit<ImageMetadata, 'id' | 'preview' | 'processingStatus'>> => {
-  const [basicInfo, exif, iptc, xmp] = await Promise.all([
-    extractBasicInfo(file),
-    extractExifData(file),
-    extractIptcData(file),
-    extractXmpData(file),
-  ]);
+  console.log('Starting metadata extraction for:', file.name);
+  
+  try {
+    const [basicInfo, exif, iptc, xmp] = await Promise.all([
+      extractBasicInfo(file),
+      extractExifData(file),
+      extractIptcData(file),
+      extractXmpData(file),
+    ]);
 
-  // Create a temporary metadata object for analysis
-  const tempMetadata: ImageMetadata = {
-    id: '',
-    file,
-    preview: '',
-    basicInfo,
-    exif,
-    iptc,
-    xmp,
-    processingStatus: 'completed'
-  };
+    console.log('Basic metadata extracted:', { basicInfo, exif, iptc, xmp });
 
-  // Perform professional photo analysis
-  const analysis = performPhotoAnalysis(tempMetadata);
+    // Create a temporary metadata object for analysis
+    const tempMetadata: ImageMetadata = {
+      id: '',
+      file,
+      preview: '',
+      basicInfo,
+      exif,
+      iptc,
+      xmp,
+      processingStatus: 'completed'
+    };
 
-  return {
-    file,
-    basicInfo,
-    exif,
-    iptc,
-    xmp,
-    analysis,
-  };
+    // Perform professional photo analysis
+    console.log('Starting photo analysis...');
+    const analysis = performPhotoAnalysis(tempMetadata);
+    console.log('Photo analysis completed:', analysis);
+
+    return {
+      file,
+      basicInfo,
+      exif,
+      iptc,
+      xmp,
+      analysis,
+    };
+  } catch (error) {
+    console.error('Error in extractAllMetadata:', error);
+    throw error;
+  }
 };
 
 export const generatePreview = (file: File): Promise<string> => {

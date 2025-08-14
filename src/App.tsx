@@ -47,18 +47,22 @@ function App() {
   }, [metadata, filters]);
 
   const handleFileUpload = async (files: FileList) => {
+    console.log('File upload started with', files.length, 'files');
     setIsProcessing(true);
     const newMetadata: ImageMetadata[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+      console.log('Processing file:', file.name, file.type, file.size);
       
       // Check if file is an image
       if (!file.type.startsWith('image/')) {
+        console.log('Skipping non-image file:', file.name);
         continue;
       }
 
       const id = `${file.name}-${Date.now()}-${i}`;
+      console.log('Creating entry with ID:', id);
       
       // Add pending entry
       const pendingEntry: ImageMetadata = {
@@ -93,11 +97,13 @@ function App() {
       newMetadata.push(pendingEntry);
     }
 
+    console.log('Adding', newMetadata.length, 'entries to metadata');
     setMetadata(prev => [...prev, ...newMetadata]);
 
     // Process each file
     for (let i = 0; i < newMetadata.length; i++) {
       const entry = newMetadata[i];
+      console.log('Processing entry:', entry.id);
       
       try {
         // Update status to processing
@@ -109,11 +115,14 @@ function App() {
           )
         );
 
+        console.log('Extracting metadata for:', entry.file.name);
         // Extract metadata and generate preview
         const [extractedData, preview] = await Promise.all([
           extractAllMetadata(entry.file),
           generatePreview(entry.file),
         ]);
+
+        console.log('Metadata extracted successfully:', extractedData);
 
         // Update with extracted data
         setMetadata(prev => 
@@ -144,6 +153,7 @@ function App() {
       }
     }
 
+    console.log('File upload processing completed');
     setIsProcessing(false);
   };
 

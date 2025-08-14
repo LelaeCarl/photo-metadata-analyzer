@@ -11,6 +11,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, isProcessing }) =
   const [dragCounter, setDragCounter] = useState(0);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
+    console.log('Drag enter event');
     e.preventDefault();
     e.stopPropagation();
     setDragCounter(prev => prev + 1);
@@ -18,6 +19,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, isProcessing }) =
   }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
+    console.log('Drag leave event');
     e.preventDefault();
     e.stopPropagation();
     setDragCounter(prev => prev - 1);
@@ -32,19 +34,23 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, isProcessing }) =
   }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
+    console.log('Drop event triggered');
     e.preventDefault();
     e.stopPropagation();
     setIsDragOver(false);
     setDragCounter(0);
 
     const files = e.dataTransfer.files;
+    console.log('Dropped files:', files.length, 'files');
     if (files.length > 0) {
       onFileUpload(files);
     }
   }, [onFileUpload]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('File select event triggered');
     const files = e.target.files;
+    console.log('Selected files:', files?.length, 'files');
     if (files && files.length > 0) {
       onFileUpload(files);
     }
